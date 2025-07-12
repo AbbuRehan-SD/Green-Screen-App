@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Green Screen Video Processor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #fdfdfd;
+    }
+
+    h1 {
+      margin-top: 20px;
+      color: #111;
+    }
+
+    .upload-box {
+      border: 2px dashed #aaa;
+      border-radius: 10px;
+      padding: 30px;
+      margin: 20px auto;
+      width: 80%;
+      max-width: 600px;
+      transition: background-color 0.3s ease;
+    }
+
+    .upload-box:hover {
+      background-color: #f0f0f0;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .btn:hover {
+      background-color: #45a049;
+    }
+
+    .btn-download {
+      background-color: #28a745;
+    }
+
+    video, img.preview {
+      max-width: 100%;
+      height: auto;
+      margin-top: 10px;
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.2);
+    }
+
+    a.switch-mode {
+      display: block;
+      margin-top: 25px;
+      text-decoration: none;
+      color: purple;
+      font-weight: bold;
+    }
+
+    a.switch-mode:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎬 Green Screen Video Processor</h1>
+
+  <form method="POST" enctype="multipart/form-data" id="video-form">
+    <!-- Foreground Video Upload -->
+    <div class="upload-box" id="fg-box">
+      <label for="video-input">
+        <strong>Drag & drop Green Screen Video (.mp4)</strong><br>
+        or click to upload
+      </label>
+      <input type="file" name="video" id="video-input" accept="video/mp4" required>
+      <div id="video-preview-container"></div>
+    </div>
+
+    <!-- Background Image Upload -->
+    <div class="upload-box" id="bg-box">
+      <label for="bg-input">
+        <strong>Drag & drop Background Image</strong><br>
+        or click to upload
+      </label>
+      <input type="file" name="background" id="bg-input" accept="image/*" required>
+      <div id="bg-preview-container"></div>
+    </div>
+
+    <button class="btn" type="submit">Upload & Process</button>
+  </form>
+
+  {% if result_video %}
+    <h3 style="margin-top: 30px;">🎉 Processed Video:</h3>
+    <video controls>
+      <source src="{{ url_for('static', filename='videos/output.mp4') }}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div style="margin-top: 15px;">
+      <a href="{{ url_for('static', filename='videos/output.mp4') }}" class="btn btn-download" download>
+        📥 Download Video
+      </a>
+    </div>
+  {% endif %}
+
+  <a href="/" class="switch-mode">← Back to Image Mode</a>
+
+  <script>
+    // Foreground Video Preview
+    document.getElementById("video-input").addEventListener("change", function () {
+      const container = document.getElementById("video-preview-container");
+      container.innerHTML = "";
+
+      const file = this.files[0];
+      if (file) {
+        const videoURL = URL.createObjectURL(file);
+        container.innerHTML = `
+          <p><strong>${file.name}</strong></p>
+          <video src="${videoURL}" controls></video>
+        `;
+      }
+    });
+
+    // Background Image Preview
+    document.getElementById("bg-input").addEventListener("change", function () {
+      const container = document.getElementById("bg-preview-container");
+      container.innerHTML = "";
+
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          container.innerHTML = `
+            <p><strong>${file.name}</strong></p>
+            <img src="${e.target.result}" class="preview">
+          `;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
+
+</body>
+</html>
